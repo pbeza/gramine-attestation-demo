@@ -1,0 +1,27 @@
+# Copy to eth-block/target/debug and run:
+#   gramine-manifest -Dlog_level=error -Darch_libdir=/lib/x86_64-linux-gnu/ gramine-attestation.manifest.template gramine-attestation.manifest
+#   gramine-sgx-sign --manifest gramine-attestation.manifest --output gramine-attestation.manifest.sgx
+#   gramine-sgx ./gramine-attestation
+
+loader.entrypoint = "file:{{ gramine.libos }}"
+libos.entrypoint = "/gramine-attestation"
+loader.log_level = "{{ log_level }}"
+loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}"
+loader.env.RUST_LOG = "info"
+
+fs.mounts = [
+  { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
+  { path = "/gramine-attestation", uri = "file:gramine-attestation" },
+  { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
+]
+
+sgx.debug = false
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:gramine-attestation",
+  "file:{{ gramine.runtimedir() }}/",
+  "file:{{ arch_libdir }}/libgcc_s.so.1",
+  "file:/usr/lib/ssl/certs/",
+]
+sgx.remote_attestation = "dcap"
